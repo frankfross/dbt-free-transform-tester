@@ -1,0 +1,22 @@
+# Tests for customer_summary: seeds are inline here, and the transform
+# itself uses {{ ref("order_totals") }}, so both transforms run.
+name: customer_summary rolls completed orders up to lifetime value
+transform: customer_summary
+seeds:
+  orders:
+    - {order_id: 1, customer_id: 10, order_date: '2026-01-05', status: 'completed'}
+    - {order_id: 2, customer_id: 10, order_date: '2026-01-06', status: 'completed'}
+    - {order_id: 3, customer_id: 20, order_date: '2026-01-07', status: 'cancelled'}
+  order_lines:
+    - {order_id: 1, sku: 'A100', qty: 2, unit_price: 9.99}
+    - {order_id: 1, sku: 'B200', qty: 1, unit_price: 5.00}
+    - {order_id: 2, sku: 'A100', qty: 3, unit_price: 4.99}
+    - {order_id: 3, sku: 'A100', qty: 1, unit_price: 99.00}
+assert:
+  - row_count: 1
+  - equals:
+      # approx: match within 0.01 — float sums like 19.98 + 5.00 + 14.97
+      # are rarely bit-exact, so money assertions should use a tolerance.
+      - {customer_id: 10, completed_orders: 2, lifetime_value: {approx: 39.95, tol: 0.01}}
+  - column_values:
+      customer_id: [10]

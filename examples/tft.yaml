@@ -1,0 +1,5 @@
+# dbt-free-transform-tester example project
+# Directory names are overridable here; the CLI flags --transforms-dir and
+# --tests-dir win over these settings.
+transforms_dir: transforms
+tests_dir: transform_tests

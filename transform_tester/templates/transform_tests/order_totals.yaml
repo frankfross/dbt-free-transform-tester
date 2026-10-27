@@ -1,0 +1,17 @@
+# Tests for order_totals: seeds come from CSV files under seeds/.
+# CSV paths are resolved relative to this test file's directory.
+name: order_totals sums completed orders only
+transform: order_totals
+seeds:
+  orders: ../seeds/orders.csv
+  order_lines: ../seeds/order_lines.csv
+assert:
+  - row_count: 2
+  - equals:
+      - {order_id: 1, customer_id: 10, total: 24.98, line_count: 2}
+      - {order_id: 2, customer_id: 10, total: 14.97, line_count: 1}
+  - not_null: [order_id, customer_id, total]
+  - unique: [order_id]
+  # Custom SQL assertion: the transform result is available as `result`.
+  # The query must return zero rows to pass.
+  - sql: "SELECT order_id FROM result WHERE total <= 0"
